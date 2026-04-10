@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: poljar-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-poljar_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_USER: ${DB_USERNAME:-user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - poljar-db-data:/var/lib/mysql
+
+  # Backend Laravel Application (PHP-FPM)
+  backend-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: poljar-backend-app
+    restart: always
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./storage:/var/www/storage
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    depends_on:
+      - mysql
+
+  # Nginx serving Backend
+  backend-web:
+    image: nginx:stable-alpine
+    container_name: poljar-backend-web
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+      - ./nginx/backend.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend-app
+
+  # Admin Panel (Vue/Vite)
+  admin-panel:
+    build:
+      context: ../poljar-web-frontend
+      dockerfile: Dockerfile
+    container_name: poljar-admin-panel
+    restart: always
+    ports:
+      - "8081:80"
+
+volumes:
+  poljar-db-data:
