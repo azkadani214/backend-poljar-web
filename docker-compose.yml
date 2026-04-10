@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # MySQL Database
@@ -8,9 +8,9 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-poljar_db}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_USER: ${DB_USERNAME:-user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-25poljarhitspoll}
+      MYSQL_USER: ${DB_USERNAME:-poljar-manager}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-25poljarhitspoll}
     ports:
       - "3306:3306"
     volumes:
