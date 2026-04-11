@@ -23,6 +23,7 @@ return [
         'http://localhost:3000',
         'http://localhost:5173',
         'https://manager.polinemamengajar.or.id',
+        'https://staging.polinemamengajar.or.id',
         'https://polinemamengajar.or.id',
     ],
 
