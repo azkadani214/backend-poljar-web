@@ -18,7 +18,7 @@ class ImageUploadService
         array $sizes = []
     ): array {
         $filename = $this->generateFilename($file); // Always returns .webp now
-        $disk = config('filesystems.default', 'public');
+        $disk = 'public';
         
         // Create directory if not exists
         if (!Storage::disk($disk)->exists($directory)) {
@@ -92,7 +92,7 @@ class ImageUploadService
      */
     public function delete(string $path): bool
     {
-        $disk = config('filesystems.default', 'public');
+        $disk = 'public';
 
         if (!Storage::disk($disk)->exists($path)) {
             return false;
@@ -138,7 +138,7 @@ class ImageUploadService
         array $sizes
     ): array {
         $thumbnails = [];
-        $disk = config('filesystems.default', 'public');
+        $disk = 'public';
         $basePath = Storage::disk($disk)->path($directory);
 
         foreach ($sizes as $sizeName => $dimensions) {
@@ -182,7 +182,7 @@ class ImageUploadService
      */
     public function getUrl(string $path): ?string
     {
-        $disk = config('filesystems.default', 'public');
+        $disk = 'public';
 
         if (Storage::disk($disk)->exists($path)) {
             return Storage::disk($disk)->url($path);
@@ -196,7 +196,7 @@ class ImageUploadService
      */
     public function optimize(string $path, int $quality = 85): bool
     {
-        $disk = config('filesystems.default', 'public');
+        $disk = 'public';
 
         if (!Storage::disk($disk)->exists($path)) {
             return false;
