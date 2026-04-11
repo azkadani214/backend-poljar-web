@@ -32,8 +32,8 @@ class StoreNewsPostRequest extends FormRequest
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
             'seo' => ['nullable', 'array'],
-            'seo.meta_title' => ['nullable', 'string', 'max:60'],
-            'seo.meta_description' => ['nullable', 'string', 'max:160'],
+            'seo.meta_title' => ['nullable', 'string', 'max:100'],
+            'seo.meta_description' => ['nullable', 'string', 'max:255'],
             'seo.keywords' => ['nullable', 'array'],
             'seo.keywords.*' => ['string', 'max:50'],
         ];
