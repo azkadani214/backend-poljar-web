@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TokenAuthController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect(config('app.frontend_url', 'https://polinemamengajar.or.id'));
 });
 
 // Token Gate Routes (No middleware - public access)
