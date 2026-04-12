@@ -25,6 +25,7 @@ return [
         'https://manager.polinemamengajar.or.id',
         'https://staging.polinemamengajar.or.id',
         'https://polinemamengajar.or.id',
+        'https://www.polinemamengajar.or.id',
     ],
 
     'allowed_origins_patterns' => [],

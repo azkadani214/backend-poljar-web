@@ -70,8 +70,8 @@ class NewsletterCampaignMail extends Mailable
             [
                 $this->subscriber->name ?: 'Subscriber',
                 $this->subscriber->email,
-                config('app.url') . '/newsletter/unsubscribe?email=' . $this->subscriber->email,
-                config('app.url') . '/newsletter/preferences?token=' . $this->subscriber->token,
+                config('app.frontend_url') . '/newsletter/unsubscribe?email=' . $this->subscriber->email,
+                config('app.frontend_url') . '/newsletter/preferences?token=' . $this->subscriber->token,
                 $postData['{{title}}'],
                 $postData['{{sub_title}}'],
                 $postData['{{excerpt}}'],
@@ -88,8 +88,8 @@ class NewsletterCampaignMail extends Mailable
             view: 'emails.newsletter.campaign',
             with: [
                 'body' => $body,
-                'unsubscribeUrl' => config('app.url') . '/newsletter/unsubscribe?email=' . $this->subscriber->email,
-                'preferenceUrl' => config('app.url') . '/newsletter/preferences?token=' . $this->subscriber->token,
+                'unsubscribeUrl' => config('app.frontend_url') . '/newsletter/unsubscribe?email=' . $this->subscriber->email,
+                'preferenceUrl' => config('app.frontend_url') . '/newsletter/preferences?token=' . $this->subscriber->token,
             ],
         );
     }

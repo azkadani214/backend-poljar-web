@@ -22,7 +22,7 @@ class OrganizationController extends Controller
         try {
             // Get all divisions with their positions and active members
             $divisions = Division::with(['positions.memberships.user' => function ($query) {
-                $query->where('is_active', true);
+                $query->where('status', 'active');
             }])->get();
 
             $chartData = [
