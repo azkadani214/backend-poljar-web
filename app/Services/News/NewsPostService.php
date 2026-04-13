@@ -193,6 +193,15 @@ class NewsPostService
                 $data['read_time'] = $this->calculateReadTime($data['body']);
             }
 
+            // Status & Dates handling
+            if (isset($data['status'])) {
+                if ($data['status'] === 'published' && !$post->published_at) {
+                    $data['published_at'] = $data['published_at'] ?? now();
+                } elseif ($data['status'] === 'scheduled' && isset($data['published_at'])) {
+                    $data['scheduled_for'] = $data['published_at'];
+                }
+            }
+
             // Update post
             $this->newsPostRepository->update($id, $data);
 
