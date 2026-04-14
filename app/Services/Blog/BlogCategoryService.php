@@ -3,22 +3,37 @@
 namespace App\Services\Blog;
 
 use App\Models\Blog\BlogCategory as Category;
+use App\Repositories\Contracts\BlogCategoryRepositoryInterface;
+use App\Exceptions\Api\NotFoundException;
+use App\Exceptions\Api\ValidationException;
 use Illuminate\Database\Eloquent\Collection;
-
 
 class BlogCategoryService
 {
+    public function __construct(
+        private BlogCategoryRepositoryInterface $blogCategoryRepository
+    ) {}
+
     /**
      * Get all blog categories
      */
     public function getAllCategories(): Collection
     {
-        return Category::withCount(['posts' => function ($query) {
-            $query->where('status', 'published')
-                ->where('published_at', '<=', now());
-        }])
-        ->orderBy('name')
-        ->get();
+        return $this->blogCategoryRepository->getAllWithPostCount();
+    }
+
+    /**
+     * Get category by ID
+     */
+    public function getCategoryById(string $id): Category
+    {
+        $category = $this->blogCategoryRepository->find($id);
+
+        if (!$category) {
+            throw new NotFoundException('Blog category not found');
+        }
+
+        return $category;
     }
 
     /**
@@ -26,15 +41,10 @@ class BlogCategoryService
      */
     public function getCategoryBySlug(string $slug)
     {
-        $category = Category::where('slug', $slug)
-            ->withCount(['posts' => function ($query) {
-                $query->where('status', 'published')
-                    ->where('published_at', '<=', now());
-            }])
-            ->first();
+        $category = $this->blogCategoryRepository->findBySlug($slug);
 
         if (!$category) {
-            throw new \App\Exceptions\Api\NotFoundException('Blog category not found');
+            throw new NotFoundException('Blog category not found');
         }
 
         return $category;
@@ -45,13 +55,7 @@ class BlogCategoryService
      */
     public function getCategoriesWithPublishedPosts(): Collection
     {
-        return Category::withCount(['posts' => function ($query) {
-            $query->where('status', 'published')
-                ->where('published_at', '<=', now());
-        }])
-        ->having('posts_count', '>', 0)
-        ->orderBy('name')
-        ->get();
+        return $this->blogCategoryRepository->getCategoriesWithPublishedPosts();
     }
 
     /**
@@ -59,13 +63,57 @@ class BlogCategoryService
      */
     public function getPopularCategories(int $limit = 10): Collection
     {
-        return Category::withCount(['posts' => function ($query) {
-            $query->where('status', 'published')
-                ->where('published_at', '<=', now());
-        }])
-        ->having('posts_count', '>', 0)
-        ->orderByDesc('posts_count')
-        ->limit($limit)
-        ->get();
+        return $this->blogCategoryRepository->getPopularCategories($limit);
+    }
+
+    /**
+     * Create category
+     */
+    public function createCategory(array $data): Category
+    {
+        // Check if category name exists
+        $existing = $this->blogCategoryRepository->findBy('name', $data['name']);
+        if ($existing) {
+            throw new ValidationException('Category name already exists');
+        }
+
+        return $this->blogCategoryRepository->create($data);
+    }
+
+    /**
+     * Update category
+     */
+    public function updateCategory(string $id, array $data): Category
+    {
+        $category = $this->getCategoryById($id);
+
+        // Check if new name exists (excluding current category)
+        if (isset($data['name']) && $data['name'] !== $category->name) {
+            $existing = $this->blogCategoryRepository->findBy('name', $data['name']);
+            if ($existing) {
+                throw new ValidationException('Category name already exists');
+            }
+        }
+
+        $this->blogCategoryRepository->update($id, $data);
+
+        return $category->fresh();
+    }
+
+    /**
+     * Delete category
+     */
+    public function deleteCategory(string $id): bool
+    {
+        $category = $this->getCategoryById($id);
+
+        // Check if category has posts
+        if ($category->posts()->count() > 0) {
+            throw new ValidationException(
+                'Cannot delete category with existing posts. Please remove or reassign posts first.'
+            );
+        }
+
+        return $this->blogCategoryRepository->delete($id);
     }
 }

@@ -275,6 +275,17 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ========================================================================
+    // BLOG CATEGORY MANAGEMENT
+    // ========================================================================
+    Route::prefix('blog/categories')->middleware('permission:blog.view')->group(function () {
+        Route::get('/', [BlogCategoryController::class, 'index']);
+        Route::post('/', [BlogCategoryController::class, 'store'])->middleware('permission:blog.create');
+        Route::get('/{id}', [BlogCategoryController::class, 'showById']);
+        Route::put('/{id}', [BlogCategoryController::class, 'update'])->middleware('permission:blog.update');
+        Route::delete('/{id}', [BlogCategoryController::class, 'destroy'])->middleware('permission:blog.delete');
+    });
+
+    // ========================================================================
     // NEWS CATEGORY MANAGEMENT
     // ========================================================================
     Route::prefix('news/categories')->middleware('permission:berita.view')->group(function () {
