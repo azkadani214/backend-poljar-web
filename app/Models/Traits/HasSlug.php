@@ -9,9 +9,11 @@ trait HasSlug
     protected static function bootHasSlug(): void
     {
         static::creating(function ($model) {
-            if (empty($model->slug) && !empty($model->title)) {
+            $sourceField = !empty($model->title) ? 'title' : (!empty($model->name) ? 'name' : null);
+            
+            if (empty($model->slug) && $sourceField) {
                 $model->slug = SlugHelper::generate(
-                    $model->title,
+                    $model->{$sourceField},
                     get_class($model),
                     null,
                     'slug'
@@ -20,9 +22,11 @@ trait HasSlug
         });
 
         static::updating(function ($model) {
-            if ($model->isDirty('title') && !$model->isDirty('slug')) {
+            $sourceField = !empty($model->title) ? 'title' : (!empty($model->name) ? 'name' : null);
+
+            if ($sourceField && $model->isDirty($sourceField) && !$model->isDirty('slug')) {
                 $model->slug = SlugHelper::generate(
-                    $model->title,
+                    $model->{$sourceField},
                     get_class($model),
                     $model->id,
                     'slug'

@@ -14,9 +14,18 @@ class StoreBlogCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:blog_categories,name',
             'description' => 'nullable|string',
             'color' => 'nullable|string|max:7',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama kategori harus diisi',
+            'name.unique' => 'Nama kategori sudah ada',
+            'name.max' => 'Nama kategori maksimal 255 karakter',
         ];
     }
 }
