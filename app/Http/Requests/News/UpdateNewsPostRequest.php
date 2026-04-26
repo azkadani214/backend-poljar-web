@@ -27,7 +27,7 @@ class UpdateNewsPostRequest extends FormRequest
             'status' => ['sometimes', 'required', 'in:published,draft,scheduled'],
             'published_at' => ['nullable', 'date'],
             'scheduled_for' => ['nullable', 'date', 'after:now'],
-            'cover_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cover_photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'photo_alt_text' => ['nullable', 'string', 'max:255'],
             'is_featured' => ['nullable', 'boolean'],
             'categories' => ['nullable', 'array'],
