@@ -64,8 +64,19 @@ public function getIsAdminAttribute(): bool
 
 public function getAvatarUrlAttribute(): string
 {
-    if ($this->photo && Storage::disk('public')->exists($this->photo)) {
-        return asset('storage/' . $this->photo);
+    if ($this->photo) {
+        if (filter_var($this->photo, FILTER_VALIDATE_URL)) {
+            return $this->photo;
+        }
+
+        $disk = config('filesystems.default');
+        if ($disk === 'public') {
+            if (Storage::disk('public')->exists($this->photo)) {
+                return asset('storage/' . $this->photo);
+            }
+        } else {
+            return Storage::disk($disk)->url($this->photo);
+        }
     }
 
     return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);

@@ -43,7 +43,7 @@ class NewsPostService
     public function getPublishedPosts(int $perPage = 15): LengthAwarePaginator
     {
         $page = request()->get('page', 1);
-        return Cache::remember("news_published_page_{$page}_per_{$perPage}", 300, function() use ($perPage) {
+        return Cache::remember("news_published_page_{$page}_per_{$perPage}", 600, function() use ($perPage) {
             return $this->newsPostRepository->getPublishedPosts($perPage);
         });
     }
@@ -53,7 +53,7 @@ class NewsPostService
      */
     public function getFeaturedPosts(int $limit = 3): Collection
     {
-        return Cache::remember("news_featured_{$limit}", 300, function() use ($limit) {
+        return Cache::remember("news_featured_{$limit}", 600, function() use ($limit) {
             return $this->newsPostRepository->getFeaturedPosts($limit);
         });
     }
@@ -345,21 +345,19 @@ class NewsPostService
      */
     private function clearNewsCache(): void
     {
-        // Using tags would be better, but default file/database driver doesn't support them
-        // So we flush or use a pattern if possible, but let's clear the specific keys
-        // or just clear all news prefix if we had a better way. 
-        // For now, let's at least clear the common ones.
-        // A better way is to use Cache::forget with known keys or use a custom flush logic.
-        
-        // Simple approach: flush if we don't have tags support. 
-        // But better to just forget most common ones.
-        Cache::forget('news_featured');
-        Cache::forget('news_latest');
-        Cache::forget('news_popular');
-        
-        // Clearing paginated cache is tricky without tags. 
-        // We might want to use a versioned key or just clear everything if it's not too heavy.
-        // For this project, clearing everything news related is fine.
+        // Clear all common limit variations used by the frontend
+        // Frontend uses: getLatest(2), getLatest(3), getLatest(5), getLatest(6)
+        // getFeatured(3), getPopular(5)
+        foreach ([1, 2, 3, 4, 5, 6, 10] as $limit) {
+            Cache::forget("news_latest_{$limit}");
+            Cache::forget("news_featured_{$limit}");
+            Cache::forget("news_popular_{$limit}");
+        }
+
+        // Clear paginated cache for published posts
+        foreach (range(1, 20) as $page) {
+            Cache::forget("news_published_page_{$page}_per_15");
+        }
     }
 
     /**
@@ -375,7 +373,7 @@ class NewsPostService
      */
     public function getLatestPosts(int $limit = 5): Collection
     {
-        return Cache::remember("news_latest_{$limit}", 300, function() use ($limit) {
+        return Cache::remember("news_latest_{$limit}", 600, function() use ($limit) {
             return $this->newsPostRepository->getLatestPosts($limit);
         });
     }
@@ -385,7 +383,7 @@ class NewsPostService
      */
     public function getPopularPosts(int $limit = 5): Collection
     {
-        return Cache::remember("news_popular_{$limit}", 300, function() use ($limit) {
+        return Cache::remember("news_popular_{$limit}", 600, function() use ($limit) {
             return $this->newsPostRepository->getPopularPosts($limit);
         });
     }

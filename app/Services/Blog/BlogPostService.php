@@ -28,7 +28,7 @@ class BlogPostService
     public function getPublishedPosts(int $perPage = 15): LengthAwarePaginator
     {
         $page = request()->get('page', 1);
-        return Cache::remember("blog_published_page_{$page}_per_{$perPage}", 300, function() use ($perPage) {
+        return Cache::remember("blog_published_page_{$page}_per_{$perPage}", 600, function() use ($perPage) {
             return $this->blogPostRepository->getPublishedPosts($perPage);
         });
     }
@@ -54,7 +54,7 @@ class BlogPostService
      */
     public function getLatestPosts(int $limit = 3): Collection
     {
-        return Cache::remember("blog_latest_{$limit}", 300, function() use ($limit) {
+        return Cache::remember("blog_latest_{$limit}", 600, function() use ($limit) {
             return $this->blogPostRepository->getLatestPosts($limit);
         });
     }
@@ -135,7 +135,7 @@ class BlogPostService
      */
     public function getRelatedPosts(string $postId, int $limit = 3): Collection
     {
-        return Cache::remember("blog_related_{$postId}_{$limit}", 300, function() use ($postId, $limit) {
+        return Cache::remember("blog_related_{$postId}_{$limit}", 600, function() use ($postId, $limit) {
             return $this->blogPostRepository->getRelatedPosts($postId, $limit);
         });
     }
@@ -145,9 +145,16 @@ class BlogPostService
      */
     public function clearBlogCache(): void
     {
-        Cache::forget('blog_latest');
-        // Clear related with a pattern is hard in Laravel default cache, 
-        // usually tags are better but for now let it expire.
+        // Clear all common limit variations used by the frontend
+        // Frontend uses: getRecent(2), getRecent(6), getLatest(3)
+        foreach ([1, 2, 3, 4, 5, 6, 10] as $limit) {
+            Cache::forget("blog_latest_{$limit}");
+        }
+
+        // Clear paginated cache for published posts
+        foreach (range(1, 20) as $page) {
+            Cache::forget("blog_published_page_{$page}_per_15");
+        }
     }
     /**
      * Get blog post statistics

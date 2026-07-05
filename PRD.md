@@ -1,4 +1,16 @@
-## Polinema Mengajar - Backend Development with Service Repository Pattern
+# Product Requirements Document (PRD) - Polinema Mengajar Backend
+
+Dokumen ini adalah PRD (Product Requirements Document) sekaligus rencana pengembangan backend untuk Polinema Mengajar. Implementasi proyek ini dibagi ke dalam 5 prinsip utama sesuai kebutuhan Anda:
+
+1. **Analyse requirements** — Identify models, relationships, APIs, and queue needs.
+2. **Design architecture** — Plan database schema, service layers, and job queues.
+3. **Implement models** — Create Eloquent models with relationships, scopes, and casts; run `php artisan make:model` and verify with `php artisan migrate:status`.
+4. **Build features** — Develop controllers, services, API resources, and jobs; run `php artisan route:list` to verify routing.
+5. **Test thoroughly** — Write feature and unit tests; run `php artisan test` before considering any step complete (target >85% coverage).
+
+---
+
+## Arsitektur & Teknologi
 
 **Project Stack:**
 
