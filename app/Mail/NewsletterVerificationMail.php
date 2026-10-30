@@ -19,9 +19,9 @@ class NewsletterVerificationMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $subject = $this->subscriber->locale === 'id' 
-            ? 'Konfirmasi Langganan Newsletter Polinema Mengajar' 
-            : 'Confirm Your Polinema Mengajar Newsletter Subscription';
+        $subject = $this->subscriber->locale === 'id'
+            ? 'Konfirmasi Langganan Newsletter Poljar'
+            : 'Confirm Your Poljar Newsletter Subscription';
 
         return new Envelope(
             subject: $subject,
@@ -33,7 +33,7 @@ class NewsletterVerificationMail extends Mailable
         return new Content(
             view: 'emails.newsletter.verification',
             with: [
-                'verificationUrl' => config('app.frontend_url', 'http://localhost:3000') . '/newsletter/verify?token=' . $this->subscriber->token,
+                'verificationUrl' => config('app.frontend_url', 'http://localhost:3000').'/newsletter/verify?token='.$this->subscriber->token,
             ],
         );
     }

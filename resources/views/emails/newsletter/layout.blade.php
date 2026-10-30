@@ -122,7 +122,9 @@
                 <p style="font-size: 12px; margin-bottom: 16px;">Politeknik Negeri Malang, Jawa Timur, Indonesia</p>
                 
                 <div class="social-links">
-                    <a href="https://instagram.com/polinemamengajar">Instagram</a>
+                    @if(config('services.social.instagram_url'))
+                        <a href="{{ config('services.social.instagram_url') }}">Instagram</a>
+                    @endif
                     <a href="{{ config('app.frontend_url') }}">Website</a>
                 </div>
                 

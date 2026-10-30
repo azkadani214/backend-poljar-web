@@ -1,5 +1,5 @@
 <?php
-use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
-        'service' => 'Polinema Mengajar API',
+        'service' => 'Poljar API',
         'version' => config('api.version', 'v1'),
         'timestamp' => now()->toIso8601String(),
     ]);

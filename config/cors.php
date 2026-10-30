@@ -19,14 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'https://manager.polinemamengajar.or.id',
-        'https://staging.polinemamengajar.or.id',
-        'https://polinemamengajar.or.id',
-        'https://www.polinemamengajar.or.id',
-    ],
+    'allowed_origins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173'))
+    ))),
 
     'allowed_origins_patterns' => [],
 

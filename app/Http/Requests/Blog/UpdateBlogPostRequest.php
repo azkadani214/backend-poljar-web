@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Blog;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateBlogPostRequest extends FormRequest
@@ -16,6 +16,7 @@ class UpdateBlogPostRequest extends FormRequest
     public function rules(): array
     {
         $id = $this->route('post') ?? $this->route('id');
+
         return [
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255', \Illuminate\Validation\Rule::unique('blog_posts')->ignore($id)],
@@ -46,6 +47,9 @@ class UpdateBlogPostRequest extends FormRequest
             'body.required' => 'Konten artikel harus diisi',
             'status.required' => 'Status harus dipilih',
             'category_ids.*.exists' => 'Kategori tidak valid',
+            'cover_photo.image' => 'File harus berupa gambar',
+            'cover_photo.mimes' => 'Format gambar: jpg, jpeg, png, webp',
+            'cover_photo.max' => 'Ukuran gambar maksimal 2MB',
         ];
     }
 

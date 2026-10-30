@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'social' => [
+        'instagram_url' => env('SOCIAL_INSTAGRAM_URL'),
+        'tiktok_url' => env('SOCIAL_TIKTOK_URL'),
+        'youtube_url' => env('SOCIAL_YOUTUBE_URL'),
+    ],
+
 ];

@@ -4,8 +4,9 @@ namespace App\Services\Upload;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
+use Intervention\Image\Laravel\Facades\Image;
+use RuntimeException;
 
 class ImageUploadService
 {
@@ -18,39 +19,31 @@ class ImageUploadService
         array $sizes = []
     ): array {
         $filename = $this->generateFilename($file); // Always returns .webp now
-        $disk = 'public';
-        
-        // Create directory if not exists
-        if (!Storage::disk($disk)->exists($directory)) {
-            Storage::disk($disk)->makeDirectory($directory);
-        }
-
-        $basePath = Storage::disk($disk)->path($directory);
-        $fullPath = "{$basePath}/{$filename}";
+        $disk = $this->disk();
         $relativeStoragePath = "{$directory}/{$filename}";
 
         // Process original image: Convert to WebP and resize if too large
         $image = Image::read($file->getRealPath());
-        
+
         // Max width for "original" to prevent massive files
         if ($image->width() > 1920) {
             $image->scale(width: 1920);
         }
 
-        // Save as WebP
-        $image->toWebp(80)->save($fullPath);
+        $encoded = (string) $image->toWebp(80);
+        $this->put($disk, $relativeStoragePath, $encoded);
 
         $result = [
             'path' => $relativeStoragePath,
             'url' => Storage::disk($disk)->url($relativeStoragePath),
             'filename' => $filename,
-            'size' => filesize($fullPath),
+            'size' => strlen($encoded),
             'mime_type' => 'image/webp',
             'original_name' => $file->getClientOriginalName(),
         ];
 
         // Generate thumbnails if sizes provided
-        if (!empty($sizes)) {
+        if (! empty($sizes)) {
             $result['thumbnails'] = $this->generateThumbnails($file, $directory, $filename, $sizes);
         }
 
@@ -92,9 +85,9 @@ class ImageUploadService
      */
     public function delete(string $path): bool
     {
-        $disk = 'public';
+        $disk = $this->disk();
 
-        if (!Storage::disk($disk)->exists($path)) {
+        if (! Storage::disk($disk)->exists($path)) {
             return false;
         }
 
@@ -123,7 +116,7 @@ class ImageUploadService
      */
     private function generateFilename(UploadedFile $file): string
     {
-        $filename = Str::uuid() . '_' . time();
+        $filename = Str::uuid().'_'.time();
 
         return "{$filename}.webp";
     }
@@ -138,8 +131,7 @@ class ImageUploadService
         array $sizes
     ): array {
         $thumbnails = [];
-        $disk = 'public';
-        $basePath = Storage::disk($disk)->path($directory);
+        $disk = $this->disk();
 
         foreach ($sizes as $sizeName => $dimensions) {
             $thumbnailFilename = $this->getThumbnailFilename($filename, $sizeName);
@@ -154,8 +146,7 @@ class ImageUploadService
                 $image->resize(width: $dimensions['width']);
             }
 
-            // Save as WebP
-            $image->toWebp(80)->save("{$basePath}/{$thumbnailFilename}");
+            $this->put($disk, $thumbnailPath, (string) $image->toWebp(80));
 
             $thumbnails[$sizeName] = [
                 'path' => $thumbnailPath,
@@ -174,6 +165,7 @@ class ImageUploadService
     private function getThumbnailFilename(string $filename, string $sizeName): string
     {
         $name = pathinfo($filename, PATHINFO_FILENAME);
+
         return "{$name}_{$sizeName}.webp";
     }
 
@@ -182,7 +174,7 @@ class ImageUploadService
      */
     public function getUrl(string $path): ?string
     {
-        $disk = 'public';
+        $disk = $this->disk();
 
         if (Storage::disk($disk)->exists($path)) {
             return Storage::disk($disk)->url($path);
@@ -196,16 +188,29 @@ class ImageUploadService
      */
     public function optimize(string $path, int $quality = 85): bool
     {
-        $disk = 'public';
+        $disk = $this->disk();
 
-        if (!Storage::disk($disk)->exists($path)) {
+        if (! Storage::disk($disk)->exists($path)) {
             return false;
         }
 
-        $fullPath = Storage::disk($disk)->path($path);
-        $image = Image::read($fullPath);
-        $image->save($fullPath, $quality);
+        $image = Image::read(Storage::disk($disk)->get($path));
+        $this->put($disk, $path, (string) $image->toWebp($quality));
 
         return true;
+    }
+
+    private function disk(): string
+    {
+        return 'public';
+    }
+
+    private function put(string $disk, string $path, string $contents): void
+    {
+        $stored = Storage::disk($disk)->put($path, $contents, ['visibility' => 'public']);
+
+        if (! $stored) {
+            throw new RuntimeException('Gagal mengunggah gambar ke storage. Periksa konfigurasi disk dan permission bucket.');
+        }
     }
 }

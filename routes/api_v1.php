@@ -1,32 +1,34 @@
 <?php
+
 // ============================================================================
 // FILE 117: routes/api_v1.php
 // ============================================================================
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Analytics\AnalyticsController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
-use App\Http\Controllers\Api\V1\User\UserController;
-
+use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 // ...
 
-use App\Http\Controllers\Api\V1\Blog\BlogTagController;
-use App\Http\Controllers\Api\V1\Role\RoleController;
-use App\Http\Controllers\Api\V1\News\NewsTagController;
-use App\Http\Controllers\Api\V1\User\ProfileController;
-use App\Http\Controllers\Api\V1\Blog\BlogPostController;
-use App\Http\Controllers\Api\V1\News\NewsPostController;
-use App\Http\Controllers\Api\V1\News\NewsCommentController;
 use App\Http\Controllers\Api\V1\Blog\BlogCategoryController;
 use App\Http\Controllers\Api\V1\Blog\BlogCommentController;
+use App\Http\Controllers\Api\V1\Blog\BlogPostController;
+use App\Http\Controllers\Api\V1\Blog\BlogTagController;
+use App\Http\Controllers\Api\V1\ContactMessageController;
 use App\Http\Controllers\Api\V1\Division\DivisionController;
-use App\Http\Controllers\Api\V1\News\NewsCategoryController;
-use App\Http\Controllers\Api\V1\Position\PositionController;
-use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Membership\MembershipController;
-use App\Http\Controllers\Api\V1\Analytics\AnalyticsController;
-use App\Http\Controllers\Api\V1\Newsletter\NewsletterPublicController;
+use App\Http\Controllers\Api\V1\News\NewsCategoryController;
+use App\Http\Controllers\Api\V1\News\NewsCommentController;
+use App\Http\Controllers\Api\V1\News\NewsPostController;
+use App\Http\Controllers\Api\V1\News\NewsTagController;
 use App\Http\Controllers\Api\V1\Newsletter\NewsletterAdminController;
+use App\Http\Controllers\Api\V1\Newsletter\NewsletterPublicController;
 use App\Http\Controllers\Api\V1\Organization\OrganizationController;
+use App\Http\Controllers\Api\V1\Position\PositionController;
+use App\Http\Controllers\Api\V1\Role\RoleController;
+use App\Http\Controllers\Api\V1\SettingController;
+use App\Http\Controllers\Api\V1\User\ProfileController;
+use App\Http\Controllers\Api\V1\User\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,20 +42,26 @@ use App\Http\Controllers\Api\V1\Organization\OrganizationController;
 
 // Authentication
 Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
-    Route::post('/reset-password', [PasswordResetController::class, 'reset']);
-    Route::post('/validate-token', [PasswordResetController::class, 'validateToken']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:5,1');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1');
+    Route::post('/validate-token', [PasswordResetController::class, 'validateToken'])->middleware('throttle:10,1');
 });
 
 // Newsletter (Public)
 Route::prefix('newsletter')->group(function () {
-    Route::post('/subscribe', [NewsletterPublicController::class, 'subscribe']);
+    Route::post('/subscribe', [NewsletterPublicController::class, 'subscribe'])->middleware('throttle:10,1');
     Route::get('/verify', [NewsletterPublicController::class, 'verify']);
     Route::get('/preferences', [NewsletterPublicController::class, 'getPreferences']);
     Route::post('/preferences', [NewsletterPublicController::class, 'updatePreferences']);
     Route::post('/unsubscribe', [NewsletterPublicController::class, 'unsubscribe']);
 });
+
+Route::post('/contact', [ContactMessageController::class, 'store'])
+    ->middleware('throttle:10,1');
+Route::post('/partnership', [ContactMessageController::class, 'storePartnership'])
+    ->middleware('throttle:10,1');
+Route::get('/settings', [SettingController::class, 'index']);
 
 // Public News Routes
 Route::prefix('public')->group(function () {
@@ -78,7 +86,7 @@ Route::prefix('public')->group(function () {
 
     // News Comments (Approved only)
     Route::get('/news/comments', [NewsCommentController::class, 'publicIndex']);
-    Route::post('/news/comments', [NewsCommentController::class, 'store']);
+    Route::post('/news/comments', [NewsCommentController::class, 'store'])->middleware('throttle:10,1');
 
     // Public Blog Routes
     Route::get('/blog/posts', [BlogPostController::class, 'publicIndex']);
@@ -89,13 +97,13 @@ Route::prefix('public')->group(function () {
     Route::post('/blog/posts/{slug}/views', [BlogPostController::class, 'incrementViews']);
     Route::get('/blog/posts/category/{slug}', [BlogPostController::class, 'byCategory']);
     Route::get('/blog/posts/tag/{slug}', [BlogPostController::class, 'byTag']);
-    
+
     // Blog Categories
     Route::get('/blog/categories', [BlogCategoryController::class, 'index']);
     Route::get('/blog/categories/with-posts', [BlogCategoryController::class, 'withPublishedPosts']);
     Route::get('/blog/categories/popular', [BlogCategoryController::class, 'popular']);
     Route::get('/blog/categories/{slug}', [BlogCategoryController::class, 'show']);
-    
+
     // Blog Tags
     Route::get('/blog/tags', [BlogTagController::class, 'index']);
     Route::get('/blog/tags/with-posts', [BlogTagController::class, 'withPublishedPosts']);
@@ -104,7 +112,7 @@ Route::prefix('public')->group(function () {
 
     // Blog Comments
     Route::get('/blog/posts/{slug}/comments', [BlogCommentController::class, 'publicIndex']);
-    Route::post('/blog/posts/{slug}/comments', [BlogCommentController::class, 'store']);
+    Route::post('/blog/posts/{slug}/comments', [BlogCommentController::class, 'store'])->middleware('throttle:10,1');
 
     // Public Organization Routes
     Route::prefix('organization')->group(function () {
@@ -113,8 +121,6 @@ Route::prefix('public')->group(function () {
         Route::get('/divisions', [DivisionController::class, 'index']);
     });
 });
-
-
 
 // Public Organization Info
 Route::prefix('organization')->group(function () {
@@ -262,7 +268,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/statistics', [BlogPostController::class, 'statistics']);
         Route::post('/bulk-delete', [BlogPostController::class, 'bulkDelete'])->middleware('permission:blog.delete');
         Route::post('/bulk-publish', [BlogPostController::class, 'bulkPublish'])->middleware('permission:blog.publish');
-        Route::get('/{id}', [BlogPostController::class, 'show']); 
+        Route::get('/{id}', [BlogPostController::class, 'show']);
         Route::put('/{id}', [BlogPostController::class, 'update'])->middleware('permission:blog.update');
         Route::delete('/{id}', [BlogPostController::class, 'destroy'])->middleware('permission:blog.delete');
     });
@@ -283,6 +289,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [BlogCategoryController::class, 'showById']);
         Route::put('/{id}', [BlogCategoryController::class, 'update'])->middleware('permission:blog.update');
         Route::delete('/{id}', [BlogCategoryController::class, 'destroy'])->middleware('permission:blog.delete');
+    });
+
+    Route::prefix('blog/tags')->middleware('permission:blog.view')->group(function () {
+        Route::get('/', [BlogTagController::class, 'index']);
+        Route::post('/', [BlogTagController::class, 'store'])->middleware('permission:blog.create');
+        Route::put('/{id}', [BlogTagController::class, 'update'])->middleware('permission:blog.update');
+        Route::delete('/{id}', [BlogTagController::class, 'destroy'])->middleware('permission:blog.delete');
     });
 
     // ========================================================================
@@ -329,14 +342,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('newsletter')->middleware('permission:newsletter.view')->group(function () {
         Route::get('/subscribers', [NewsletterAdminController::class, 'subscribers']);
         Route::get('/statistics', [NewsletterAdminController::class, 'statistics']);
-        
+
         Route::get('/topics', [NewsletterAdminController::class, 'topics']);
         Route::post('/topics', [NewsletterAdminController::class, 'storeTopic'])->middleware('permission:newsletter.update');
-        
+
         Route::get('/campaigns', [NewsletterAdminController::class, 'campaigns']);
         Route::post('/campaigns', [NewsletterAdminController::class, 'storeCampaign'])->middleware('permission:newsletter.update');
         Route::post('/campaigns/{id}/send', [NewsletterAdminController::class, 'sendCampaign'])->middleware('permission:newsletter.send');
-        
+
         Route::get('/templates', [NewsletterAdminController::class, 'templates']);
         Route::post('/templates', [NewsletterAdminController::class, 'storeTemplate'])->middleware('permission:newsletter.update');
     });
@@ -346,6 +359,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // ========================================================================
     Route::prefix('analytics')->middleware('permission:statistik.view')->group(function () {
         Route::get('/overview', [AnalyticsController::class, 'getOverview']);
+    });
+
+    // ========================================================================
+    // SETTINGS MANAGEMENT
+    // ========================================================================
+    Route::prefix('settings')->middleware('permission:sistem.view')->group(function () {
+        Route::get('/', [SettingController::class, 'index']);
+        Route::put('/', [SettingController::class, 'update'])->middleware('permission:sistem.update');
     });
 });
 

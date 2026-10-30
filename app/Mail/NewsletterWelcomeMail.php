@@ -19,9 +19,9 @@ class NewsletterWelcomeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $subject = $this->subscriber->locale === 'id' 
-            ? 'Selamat Datang di Newsletter Polinema Mengajar' 
-            : 'Welcome to Polinema Mengajar Newsletter';
+        $subject = $this->subscriber->locale === 'id'
+            ? 'Selamat Datang di Newsletter Poljar'
+            : 'Welcome to Poljar Newsletter';
 
         return new Envelope(
             subject: $subject,
@@ -33,7 +33,7 @@ class NewsletterWelcomeMail extends Mailable
         return new Content(
             view: 'emails.newsletter.welcome',
             with: [
-                'preferenceUrl' => config('app.frontend_url', 'http://localhost:3000') . '/newsletter/preferences?token=' . $this->subscriber->token,
+                'preferenceUrl' => config('app.frontend_url', 'http://localhost:3000').'/newsletter/preferences?token='.$this->subscriber->token,
             ],
         );
     }

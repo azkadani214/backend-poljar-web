@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Blog;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreBlogPostRequest extends FormRequest
@@ -45,6 +45,9 @@ class StoreBlogPostRequest extends FormRequest
             'body.required' => 'Konten artikel harus diisi',
             'status.required' => 'Status harus dipilih',
             'category_ids.*.exists' => 'Kategori tidak valid',
+            'cover_photo.image' => 'File harus berupa gambar',
+            'cover_photo.mimes' => 'Format gambar: jpg, jpeg, png, webp',
+            'cover_photo.max' => 'Ukuran gambar maksimal 2MB',
         ];
     }
 

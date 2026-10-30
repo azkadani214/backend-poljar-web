@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TokenAuthController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect(config('app.frontend_url', 'https://polinemamengajar.or.id'));
+    return redirect(config('app.frontend_url', 'http://localhost:3000'));
 });
 
 // Token Gate Routes (No middleware - public access)
@@ -19,11 +19,11 @@ Route::post('/admin/token/logout', [TokenAuthController::class, 'logoutToken'])
 
 // Admin Login (Protected by token gate)
 Route::middleware(['admin.token'])->group(function () {
-    
+
     // Redirect /admin to admin dashboard
     Route::get('/admin', function () {
         return redirect('/admin/dashboard');
     });
-    
+
     // Additional custom admin routes can be added here
 });
